@@ -1,0 +1,11 @@
+services:
+  student-app:
+    build: .
+    container_name: student-app
+    network_mode: host
+    volumes:
+      - ./config/application-local.properties:/config/application-local.properties:ro
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
+    restart: unless-stopped
