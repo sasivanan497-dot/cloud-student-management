@@ -1,0 +1,52 @@
+
+name: Student Management CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build Spring Boot Application
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ci_root_password
+          MYSQL_DATABASE: student_db
+          MYSQL_USER: student_app
+          MYSQL_PASSWORD: ci_student_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pci_root_password --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/student_db
+      SPRING_DATASOURCE_USERNAME: student_app
+      SPRING_DATASOURCE_PASSWORD: ci_student_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build and test application
+        run: chmod +x mvnw && ./mvnw clean verify
+
